@@ -8,6 +8,7 @@
 import UIKit
 import AVFoundation
 
+
 // UIImagePickerControllerDelegate & UINavigationControllerDelegate se requieren para la implementacion del imagePicker
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var fugitive : Fugitive?
@@ -96,7 +97,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let action1 = UIAlertAction(title: "SI", style: .default) {
             alertaction in
             // 1. TODO: Obtener coordenadas del usuario
-            
+            //self.getLocationAndCaptureFugitive()
             // 2. Enviar coordenadas y ID del fugitivo al backend
             
             // 3. Presumir en redes sociales!
@@ -110,6 +111,58 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         ac.addAction(action2)
         self.present(ac, animated: true)
     }
+    
+    /*
+    func getLocationAndCaptureFugitive() {
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestWhenInUseAuthorization()
+
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.startUpdatingLocation()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        locationManager.stopUpdatingLocation()
+
+        if let location = locations.first {
+            // 2. Enviar coordenadas y ID del fugitivo al backend
+            captureFugitiveWithLocation(location)
+        }
+    }
+    
+    func captureFugitiveWithLocation(_ location: CLLocation) {
+        guard let fugitiveId = fugitive?.id else {
+            print("No se pudo obtener el ID del fugitivo.")
+            return
+        }
+
+        // 3. Enviar coordenadas y ID del fugitivo al backend
+        let parameters: [String: Any] = [
+            "id_fugitive": fugitiveId,
+            "captured_lat": location.coordinate.latitude,
+            "captured_lon": location.coordinate.longitude
+        ]
+
+        Alamofire.request("http://janzelaznog.com/DDAM/iOS/BountyHunter/capture_fugitive.php", method: .post, parameters: parameters)
+            .responseString { response in
+                switch response.result {
+                case .success(let successMessage):
+                    if successMessage == "SUCCESS" {
+                        print("¡Fugitivo capturado con éxito!")
+                        // Puedes realizar acciones adicionales después de la captura exitosa.
+                    } else {
+                        print("Error al capturar el fugitivo. Respuesta del servidor: \(successMessage)")
+                    }
+                case .failure(let error):
+                    print("Error al capturar el fugitivo: \(error)")
+                }
+        }
+    }
+*/
+
     
     func fillInfo() {
         if fugitive != nil {
