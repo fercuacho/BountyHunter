@@ -7,7 +7,7 @@
 
 import UIKit
 import AVFoundation
-
+import CoreLocation
 
 // UIImagePickerControllerDelegate & UINavigationControllerDelegate se requieren para la implementacion del imagePicker
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -19,6 +19,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     let apiS = APIService()
     let imagepicker = UIImagePickerController()
     var player:AVAudioPlayer?
+    
+    var latitude: String = ""
+    var longitude: String = ""
+        
+    var locationManager: CLLocationManager!
     
     override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
         if let laURL = Bundle.main.url(forResource: "bang_3", withExtension: "mp3") {
@@ -97,9 +102,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let action1 = UIAlertAction(title: "SI", style: .default) {
             alertaction in
             // 1. TODO: Obtener coordenadas del usuario
-            //self.getLocationAndCaptureFugitive()
+            print(self.latitude)
+            print(self.longitude)
+                        
             // 2. Enviar coordenadas y ID del fugitivo al backend
-            
+                        
+            APIService().captureFugitive(fugitiveId: self.fugitive!.fugitiveid, lat: self.latitude, lon: self.longitude){ dictionary in
+                print("Todo ok")
+            }
             // 3. Presumir en redes sociales!
             let items = ["Acabo de capturar a \(self.fugitive!.name)!!",
                          UIImage(named: "capturado") as Any]
@@ -112,27 +122,27 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.present(ac, animated: true)
     }
     
-    /*
-    func getLocationAndCaptureFugitive() {
-        locationManager = CLLocationManager()
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.startUpdatingLocation()
-        }
-    }
-    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        locationManager.stopUpdatingLocation()
-
-        if let location = locations.first {
-            // 2. Enviar coordenadas y ID del fugitivo al backend
-            captureFugitiveWithLocation(location)
+            if let location = locations.last {
+                // Aquí tienes la ubicación actual
+                latitude = String(location.coordinate.latitude)
+                longitude = String(location.coordinate.longitude)
+                
+            }
         }
-    }
     
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+            locationManager.stopUpdatingLocation()
+            let ac = UIAlertController(title: "Error", message:"No se puede obtener su ubicación", preferredStyle: .alert)
+            let action = UIAlertAction(title: "ok", style: .default) {
+                alertaction in
+                // Este codigo se ejecutará cuando el usuario toque el botón
+            }
+            ac.addAction(action)
+            self.present(ac, animated: true)
+        }
+    
+    /*
     func captureFugitiveWithLocation(_ location: CLLocation) {
         guard let fugitiveId = fugitive?.id else {
             print("No se pudo obtener el ID del fugitivo.")
@@ -160,8 +170,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                     print("Error al capturar el fugitivo: \(error)")
                 }
         }
-    }
-*/
+    }*/
+
 
     
     func fillInfo() {
@@ -186,6 +196,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         super.viewDidLoad()
         imagepicker.delegate = self
         // Do any additional setup after loading the view.
+        
+        locationManager = CLLocationManager()
+        locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        locationManager.requestWhenInUseAuthorization()
+                
+        locationManager.startUpdatingLocation()
+        locationManager.delegate = self
+        
         createView()
     }
     

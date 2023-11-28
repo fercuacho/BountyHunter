@@ -173,6 +173,54 @@ struct APIService {
           return "Boundary-\(NSUUID().uuidString)"
        }
     
+    func captureFugitive(fugitiveId: Int, lat:String, lon: String, completionHandler: @escaping (Dictionary<String,Any>?) -> Void ) {
+                let url = "http://janzelaznog.com/DDAM/iOS/BountyHunter/capture_fugitive.php"
+                var request = URLRequest(url: URL(string:url)!)
+                let params = [
+                    "id_fugitive" : fugitiveId,
+                    "captured_lat" : lat,
+                    "captured_lon": lon
+                ] as [String : Any]
+            
+                var formDataString = ""
+                for (key, value) in params {
+                    formDataString += "\(key)=\(value)&"
+                }
+                formDataString = String(formDataString.dropLast())
+            
+                let jsonData = try? JSONSerialization.data(withJSONObject: params)
+
+                let formDataEncoded = formDataString.data(using: .utf8)
+                
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpMethod = "POST"
+            
+                request.httpBody = formDataEncoded
+                
+                let defaultSession = URLSession(configuration: URLSessionConfiguration.ephemeral)
+                let dataTask = defaultSession.dataTask(with: request) { (data:Data?, urlResponse:URLResponse?, error:Error?) in
+                    let httpResponse = urlResponse as? HTTPURLResponse
+                    let statusCode = httpResponse?.statusCode ?? 0
+                    print(statusCode)
+                    if (statusCode == 200) {
+                        do {
+                            print("Todo OK")
+                            completionHandler(nil)
+                        }
+                        catch {
+                            print(error.localizedDescription)
+                        }
+                    } else {
+                        completionHandler(nil)
+                    }
+                    if (error != nil){
+                        print("Error %@",error!)
+                        completionHandler(nil)
+                    }
+                }
+                dataTask.resume()
+            }
+    
 }
 
 /*
